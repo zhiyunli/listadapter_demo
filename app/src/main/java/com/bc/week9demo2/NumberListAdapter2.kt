@@ -1,48 +1,97 @@
 package com.bc.week9demo2
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.databinding.BindingAdapter
+import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bc.week9demo2.databinding.ColorViewBinding
+import com.bc.week9demo2.databinding.ItemViewBinding
 
-class NumberListAdapter2 : ListAdapter<Int, NumberListAdapter2.IntViewHolder>(RowItemDiffCallback()){
+enum class ITEM_VIEW_TYPE {NUMBER, COLOR}
 
-    fun setData(data: List<Int>){
+class NumberListAdapter2 : ListAdapter<Any, RecyclerView.ViewHolder>(RowItemDiffCallback()){
+
+    fun setData(data: List<Any>){
         submitList(data)
     }
 
-    class IntViewHolder (val row: View):RecyclerView.ViewHolder(row)  {
-        val textView = row.findViewById<TextView>(R.id.number)
+    class IntViewHolder private constructor(val binding: ItemViewBinding):RecyclerView.ViewHolder(binding.root)  {
+        companion object{
+            fun from(parent: ViewGroup):IntViewHolder{
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding:ItemViewBinding  = DataBindingUtil.inflate(layoutInflater,
+                R.layout.item_view, parent, false)
+                //val binding = ItemViewBinding.inflate(layoutInflater, parent, false)
+                return IntViewHolder(binding)
+            }
+
+        }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): IntViewHolder {
-        val layout = LayoutInflater.from(parent.context).inflate(R.layout.item_view, parent, false)
-        val holder = IntViewHolder(layout)
-        holder.row.setOnClickListener {
-            Log.v("onClick", it.findViewById<TextView>(R.id.number).text.toString())
+    class ColorViewHolder private constructor(val binding: ColorViewBinding):   RecyclerView.ViewHolder(binding.root) {
+
+        companion object {
+            fun from(parent: ViewGroup): ColorViewHolder {
+                val layoutInflater = LayoutInflater.from(parent.context)
+                val binding = ColorViewBinding.inflate(layoutInflater,
+                    parent, false)
+                return ColorViewHolder(binding)
+            }
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when(viewType) {
+            ITEM_VIEW_TYPE.NUMBER.ordinal -> IntViewHolder.from(parent)
+            else ->ColorViewHolder.from(parent)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        //holder.textView.text = getItem(position).toString()
+
+        when(holder){
+            is IntViewHolder ->{
+                holder.binding.num = getItem(position) as Int
+                holder.binding.executePendingBindings()
+            }
+            is ColorViewHolder ->{
+                holder.binding.color = getItem(position) as Color
+                holder.binding.executePendingBindings()
+            }
         }
 
-        return holder
-
     }
 
-    override fun onBindViewHolder(holder: IntViewHolder, position: Int) {
-        holder.textView.text = getItem(position).toString()
+    override fun getItemViewType(position: Int): Int {
+        return when(getItem(position)){
+            is Int -> ITEM_VIEW_TYPE.NUMBER.ordinal
+            else -> ITEM_VIEW_TYPE.COLOR.ordinal
+        }
     }
 }
 
-class RowItemDiffCallback: DiffUtil.ItemCallback<Int>() {
-    override fun areItemsTheSame(oldItem: Int, newItem: Int): Boolean {
+class RowItemDiffCallback: DiffUtil.ItemCallback<Any>() {
+    override fun areItemsTheSame(oldItem: Any, newItem: Any): Boolean {
         Log.v("callback areItemsTheSame", Thread.currentThread().name)
         return oldItem == newItem
     }
 
-    override fun areContentsTheSame(oldItem: Int, newItem: Int): Boolean {
+    override fun areContentsTheSame(oldItem: Any, newItem: Any): Boolean {
         Log.v("callback areContentsTheSame", Thread.currentThread().name)
-        return oldItem == newItem
+        if(oldItem is Int && newItem is Int)
+            return oldItem == newItem
+
+        if(oldItem is Color && newItem is Color)
+            return oldItem == newItem
+
+        return false
     }
 }

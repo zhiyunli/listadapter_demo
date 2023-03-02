@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="num"
+            type="Integer" />
+    </data>
 
-    <TextView
-        android:id="@+id/number"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="30sp" />
+        android:orientation="horizontal">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/number"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="#ff00ff"
+            android:text="@{num.toString()}"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/base2_number"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:base2Number="@{num}"
+            android:textSize="24sp" />
+
+
+    </LinearLayout>
+</layout>
